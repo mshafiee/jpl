@@ -14,9 +14,13 @@ func main() {
 
 	filepath := os.Args[1]
 
-	js := jpl.NewJPL(filepath)
+	jplFileReader, err := os.Open(filepath)
+	if err != nil {
+		panic(err)
+	}
+	defer jplFileReader.Close()
 
-	ss, err := js.OpenJplFile()
+	js, ss, err := jpl.NewJPL(jplFileReader)
 	if err != nil {
 		fmt.Printf("Error opening JPL file: %s\n", err)
 		return
@@ -29,13 +33,12 @@ func main() {
 	fmt.Printf("DE Number: %d\n", denum)
 
 	et := 2451545.0
-	ntarg := jpl.Earth // J_EARTH
-	ncent := jpl.Sun   // J_SUN
+	ntarg := jpl.Earth
+	ncent := jpl.Sun
 
 	rrd, err := js.EphemerisLookup(et, ntarg, ncent)
 	if err != nil {
 		fmt.Printf("Error calculating positions and velocities: %s\n", err)
-		js.CloseJplFile()
 		return
 	}
 
